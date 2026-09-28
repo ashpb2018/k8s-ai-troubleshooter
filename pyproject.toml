@@ -1,0 +1,88 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kubemedic"
+version = "0.1.0"
+description = "An LLM-driven agent that diagnoses and remediates Kubernetes clusters, then writes the runbook for you."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Ash K" }]
+keywords = ["kubernetes", "sre", "llm", "ai-agent", "troubleshooting", "devops"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Systems Administration",
+]
+
+dependencies = [
+    "kubernetes>=29.0.0",
+    "typer>=0.13.0",
+    "rich>=13.9.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "python-dotenv>=1.0.1",
+    "pyyaml>=6.0.2",
+    "httpx>=0.28.0",
+]
+
+[project.optional-dependencies]
+ollama = ["ollama>=0.4.0"]
+openai = ["openai>=1.50.0"]
+bedrock = ["boto3>=1.38.0"]
+web = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "websockets>=13.0",
+]
+all = [
+    "ollama>=0.4.0",
+    "openai>=1.50.0",
+    "boto3>=1.38.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "websockets>=13.0",
+]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+]
+
+[project.scripts]
+kubemedic = "kubemedic.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/ashpb2018/k8s-ai-troubleshooter"
+Repository = "https://github.com/ashpb2018/k8s-ai-troubleshooter"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kubemedic"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_ignores = true
+ignore_missing_imports = true
+files = ["src/kubemedic"]
