@@ -1,5 +1,9 @@
 # KubeMedic
 
+[![CI](https://github.com/ashpb2018/k8s-ai-troubleshooter/actions/workflows/ci.yml/badge.svg)](https://github.com/ashpb2018/k8s-ai-troubleshooter/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 **An LLM-driven agent that diagnoses and repairs Kubernetes clusters — then writes the runbook for you.**
 
 KubeMedic gives a large language model a curated, safe set of Kubernetes operations and lets it work like an on-call SRE: it triages the cluster, correlates logs, events and resource pressure to find a root cause, applies the least-invasive fix (with your confirmation), and records a Markdown runbook for every incident it handles.
