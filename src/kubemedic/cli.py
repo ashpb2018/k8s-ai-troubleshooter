@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -108,9 +107,9 @@ def _persist_runbook(runtime: Runtime, incident: Incident, renderer: ConsoleRend
 
 @app.command()
 def chat(
-    backend: Optional[str] = typer.Option(None, "--backend", "-b", help="ollama | bedrock | openai"),
-    model: Optional[str] = typer.Option(None, "--model", "-m"),
-    context: Optional[str] = typer.Option(None, "--context", "-c"),
+    backend: str | None = typer.Option(None, "--backend", "-b", help="ollama | bedrock | openai"),
+    model: str | None = typer.Option(None, "--model", "-m"),
+    context: str | None = typer.Option(None, "--context", "-c"),
     auto_approve: bool = typer.Option(False, "--auto-approve"),
 ) -> None:
     """Open an interactive troubleshooting session."""
@@ -141,9 +140,9 @@ def chat(
 
 @app.command()
 def scan(
-    backend: Optional[str] = typer.Option(None, "--backend", "-b"),
-    model: Optional[str] = typer.Option(None, "--model", "-m"),
-    context: Optional[str] = typer.Option(None, "--context", "-c"),
+    backend: str | None = typer.Option(None, "--backend", "-b"),
+    model: str | None = typer.Option(None, "--model", "-m"),
+    context: str | None = typer.Option(None, "--context", "-c"),
     auto_approve: bool = typer.Option(False, "--auto-approve"),
 ) -> None:
     """Run a one-shot cluster health sweep and write a runbook."""
@@ -158,10 +157,10 @@ def scan(
 @app.command()
 def fix(
     problem: str = typer.Argument(..., help="Describe the problem in plain language"),
-    backend: Optional[str] = typer.Option(None, "--backend", "-b"),
-    model: Optional[str] = typer.Option(None, "--model", "-m"),
-    context: Optional[str] = typer.Option(None, "--context", "-c"),
-    namespace: Optional[str] = typer.Option(None, "--namespace", "-n"),
+    backend: str | None = typer.Option(None, "--backend", "-b"),
+    model: str | None = typer.Option(None, "--model", "-m"),
+    context: str | None = typer.Option(None, "--context", "-c"),
+    namespace: str | None = typer.Option(None, "--namespace", "-n"),
     auto_approve: bool = typer.Option(False, "--auto-approve"),
 ) -> None:
     """Diagnose and repair a specific problem, then write a runbook."""

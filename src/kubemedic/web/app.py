@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from datetime import datetime
 from pathlib import Path
 
@@ -68,10 +69,8 @@ def create_app() -> FastAPI:
             async for message in websocket.iter_json():
                 await _handle_inbound(loop, session, message)
 
-        try:
+        with contextlib.suppress(WebSocketDisconnect, Exception):
             await asyncio.gather(pump_outbox(), pump_inbox())
-        except (WebSocketDisconnect, Exception):
-            pass
 
     # ------------------------------------------------------------- config
 

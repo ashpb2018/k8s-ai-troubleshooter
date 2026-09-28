@@ -6,8 +6,8 @@ over structured data.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Iterable
 
 
 def humanise_age(created: datetime | None) -> str:
