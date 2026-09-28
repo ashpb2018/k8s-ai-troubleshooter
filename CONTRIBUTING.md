@@ -29,3 +29,7 @@ The core lives under `src/kubemedic/`:
 
 Open a GitHub issue with clear reproduction steps, the backend/model in use,
 and any relevant runbook or log output (redact secrets first).
+
+## Maintainer
+
+Maintained by [@ashpb2018](https://github.com/ashpb2018).
