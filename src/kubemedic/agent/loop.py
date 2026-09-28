@@ -7,7 +7,7 @@ from collections.abc import Callable
 
 from ..cluster.operations import ClusterOperations
 from ..providers.base import ChatBackend
-from ..providers.messages import Completion, Conversation, ToolInvocation, Turn
+from ..providers.messages import Conversation, ToolInvocation, Turn
 from . import events, toolspec
 from .events import AgentEvent
 from .incident import Incident
@@ -15,6 +15,18 @@ from .prompt import SCAN_REQUEST, SYSTEM_PROMPT
 
 EmitFn = Callable[[AgentEvent], None]
 ConfirmFn = Callable[[str], bool]
+
+# Using any of these tools means the agent changed cluster state.
+_REMEDIATION_TOOLS = frozenset(
+    {
+        "restart_deployment",
+        "rollback_deployment",
+        "scale_deployment",
+        "delete_pod",
+        "apply_manifest",
+        "patch_resource",
+    }
+)
 
 
 def _coerce_arguments(method: object, arguments: dict) -> dict:
@@ -68,7 +80,10 @@ class Investigator:
         """Work a single request to completion and return the incident record."""
         self._conversation.add(Turn.user(request))
         incident = Incident(request=request)
-        final: Completion | None = None
+        # The model's final turn is sometimes empty (many models stop talking
+        # after their last tool call), so keep the latest non-empty prose as a
+        # fallback for the runbook narrative.
+        last_prose = ""
 
         for _ in range(self._max_steps):
             try:
@@ -83,10 +98,10 @@ class Investigator:
                 Turn.assistant(completion.text, completion.invocations)
             )
             if completion.text:
+                last_prose = completion.text
                 self._emit(events.Speak(completion.text))
 
             if not completion.wants_tools:
-                final = completion
                 self._emit(events.Finished())
                 break
 
@@ -96,12 +111,9 @@ class Investigator:
             self._emit(events.Notice("Reached the step limit for this investigation."))
             self._emit(events.Finished())
 
-        if final and final.text:
-            incident.absorb_report(final.text)
-            incident.resolved = bool(
-                self._used_tools
-                & {"restart_deployment", "rollback_deployment", "scale_deployment", "apply_manifest", "patch_resource"}
-            )
+        if last_prose:
+            incident.absorb_report(last_prose)
+        incident.resolved = bool(self._used_tools & _REMEDIATION_TOOLS)
         return incident
 
     def scan(self) -> Incident:

@@ -87,6 +87,24 @@ def test_loop_marks_resolved_when_remediation_tool_used():
     assert incident.resolved is True
 
 
+def test_narrative_falls_back_to_last_prose_when_final_turn_empty():
+    # Many models stop producing text after their final tool call; the loop
+    # should still capture the earlier prose in the runbook narrative.
+    backend = ScriptedBackend(
+        [
+            Completion(
+                text="**Root Cause**\nBad image tag.",
+                invocations=[ToolInvocation("c1", "cluster_triage", {})],
+            ),
+            Completion(text=""),  # empty final turn, no tool calls
+        ]
+    )
+    agent = Investigator(backend, FakeOps(), emit=lambda _e: None)
+    incident = agent.investigate("what is wrong?")
+    assert "Bad image tag" in incident.root_cause
+    assert incident.narrative
+
+
 def test_unknown_tool_reports_error_without_crashing():
     backend = ScriptedBackend(
         [

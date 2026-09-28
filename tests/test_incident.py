@@ -55,3 +55,13 @@ def test_missing_sections_leave_defaults():
     incident.absorb_report("Just a plain sentence, no headings.")
     assert incident.root_cause == ""
     assert incident.verification == []
+
+
+def test_root_cause_sniffed_from_lead_prose():
+    incident = Incident(request="x")
+    incident.absorb_report(
+        "The root cause is an image tag that does not exist.\n\n"
+        "### Fix Applied\nUse a valid tag.\n"
+    )
+    assert "image tag that does not exist" in incident.root_cause
+    assert "Use a valid tag" in incident.remediation

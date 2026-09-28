@@ -54,6 +54,11 @@ class Incident:
             else:
                 setattr(self, attr, text)
 
+        # Models often lead with a "the root cause is …" sentence before any
+        # heading. If the heading parse missed it, recover it from the prose.
+        if not self.root_cause:
+            self.root_cause = self._sniff_root_cause(report)
+
     @staticmethod
     def _match_heading(line: str) -> str | None:
         match = _HEADING.match(line)
@@ -64,6 +69,15 @@ class Incident:
             if key in label:
                 return key
         return None
+
+    @staticmethod
+    def _sniff_root_cause(report: str) -> str:
+        """Best-effort: find a sentence naming the root cause in free prose."""
+        for line in report.splitlines():
+            stripped = line.strip()
+            if "root cause" in stripped.lower() and not _HEADING.match(stripped):
+                return re.sub(r"[*#`]", "", stripped).strip()
+        return ""
 
     @staticmethod
     def _to_bullets(text: str) -> list[str]:

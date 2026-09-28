@@ -1,0 +1,60 @@
+# Deliberately broken workloads for exercising KubeMedic against a test cluster.
+#   kubectl apply -f examples/broken-workloads.yaml
+#
+# Creates:
+#   - a Deployment whose image tag does not exist  -> ImagePullBackOff
+#   - a Deployment requesting impossible resources  -> Pending (unschedulable)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-image
+  namespace: demo
+  labels:
+    app: bad-image
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bad-image
+  template:
+    metadata:
+      labels:
+        app: bad-image
+    spec:
+      containers:
+        - name: web
+          # This tag does not exist -> ImagePullBackOff / ErrImagePull
+          image: nginx:this-tag-does-not-exist-9999
+          ports:
+            - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: too-greedy
+  namespace: demo
+  labels:
+    app: too-greedy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: too-greedy
+  template:
+    metadata:
+      labels:
+        app: too-greedy
+    spec:
+      containers:
+        - name: hog
+          image: nginx:1.27-alpine
+          resources:
+            requests:
+              # No single node can satisfy this -> Pending (unschedulable)
+              cpu: "1000"
+              memory: 4000Gi
